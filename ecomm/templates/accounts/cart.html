@@ -1,0 +1,140 @@
+{% extends "base/base.html" %}
+
+{% block start %}
+<div class="container">
+    <div class="row mb-5">
+        <form class="col-md-12" method="post">
+            <div class="site-blocks-table">
+                {% if cart %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="product-thumbnail">Image</th>
+                                <th class="product-name">Product</th>
+                                <th class="product-price">Price</th>
+                                <th class="product-quantity">Size</th>
+                                
+                                <th class="product-remove">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.cart_items.all %}
+                                <tr>
+                                    <td class="product-thumbnail">
+                                        <img src="/media/{{ item.product.product_images.first.image }}" alt="Image" class="img-fluid" style="max-width: 100px;">
+                                    </td>
+                                    <td class="product-name">
+                                        <h2 class="h5 text-black">{{ item.product.product_name }}</h2>
+                                    </td>
+                                    <td>₹{{ item.product.price }}</td>
+                                    <td>{{ item.size_variant }}</td> <!-- Display the size variant -->
+                                    <td>
+                                        <a href="{% url 'remove_cart' cart_item_uid=item.uid %}" class="btn btn-primary btn-sm">X</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Your cart is empty.</p>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <button onclick="window.location='#'" class="btn btn-primary btn-sm btn-block">Continue Shopping</button>
+                </div>
+                
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <button class="btn btn-outline-primary btn-sm btn-block">Checkout</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="text-black h4" for="coupon">Coupon</label>
+                    <p>Have Coupon?</p>
+                </div>
+                <form  method="POST">
+                    {% include "base/alert.html" %}
+                    {% csrf_token %}
+                    <div class="col-md-8 mb-3 mb-md-0">
+                        <input type="text" name="coupon" class="form-control" placeholder="Enter coupon code">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary btn-sm">Apply Coupon</button>
+                    </div>
+                    {% if cart.coupon %}
+                    <a href="{% url 'remove_coupon' cart.uid %}" class="btn btn-success">{{cart.coupon.coupon_code}}</a>
+                    {% endif %}
+                </form>
+            </div>
+            
+        </div>
+        <div class="col-md-6 pl-5">
+            <div class="row justify-content-end">
+                <div class="col-md-7">
+                    <div class="row">
+                        <div class="col-md-12 text-right border-bottom mb-5">
+                            <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <span class="text-black">Total</span>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <strong class="text-black">₹{{ cart.get_cart_total|floatformat:"2" }}</strong>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button id= "rzp-button1" onclick="window.location='#'">Proceed To Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    var options = {
+        "key": "rzp_test_H8dSfJZF0abgMZ", // Enter the Key ID generated from the Dashboard
+        "amount": "{{payment.amount}}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        "currency": "INR",
+        "name": "E-Commerce",
+        "description": "Purchases",
+        "image": "https://example.com/your_logo",
+        "order_id": "{{payment.id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+        "handler": function (response){
+    
+            console.log('Success')
+            window.location.href = `http://127.0.0.1:8000/accounts/success/?order_id={{payment.id}}`
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
+            alert(response.error.code);
+            alert(response.error.description);
+            alert(response.error.source);
+            alert(response.error.step);
+            alert(response.error.reason);
+            alert(response.error.metadata.order_id);
+            alert(response.error.metadata.payment_id);
+    });
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+    </script>
+    
+{% endblock %}
