@@ -6,3 +6,4 @@ Created a fully functional e-commerce website with user authentication, product 
 ![image](https://github.com/user-attachments/assets/2564532a-05b9-4369-a449-42d5ac0796b0)
 ![image](https://github.com/user-attachments/assets/40098419-3fc4-4bf9-a893-37297b445331)
 ![image](https://github.com/user-attachments/assets/6d24fb58-0e60-40a4-9c39-42a9749413f2)
+More information is available in pdf..
